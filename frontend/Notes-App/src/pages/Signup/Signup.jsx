@@ -2,15 +2,43 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Nav from '../../components/Navbar/Nav';
 import '../Signup/Signup.css';
-
+import axiosInstance from '../../utils/axiosInstance';
+import { useNavigate } from 'react-router-dom';
 function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (event) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     // Signup API call
+
+    try {
+      const response = await axiosInstance.post("/create-account", {
+        fullName:name,
+        email: email,
+        password: password,
+      });
+
+      if(response.data && response.data.error) {
+        alert(response.data.message);
+        return;
+      }
+
+      if(response.data && response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+        navigate("/");
+      }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message){
+        alert(error.response.data.message);
+      }
+      else{
+        alert("An Unexpected error occurred. Please try again !")
+      }
+    }
   };
 
   return (

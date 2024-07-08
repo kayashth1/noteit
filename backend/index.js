@@ -303,6 +303,40 @@ try {
        
 })
 
+
+// Search Notes
+app.get("/search-notes", authenticateToken, async (req, res) => {
+    const { query } = req.query;
+    const { user } = req.user;
+  
+    if (!query) {
+      return res.status(400).json({ error: true, message: "Query is required" });
+    }
+  
+    try {
+      const notes = await Note.find({
+        userId: user._id,
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { content: { $regex: query, $options: "i" } },
+          { tags: { $regex: query, $options: "i" } }
+        ]
+      }).sort({ isPinned: -1 });
+  
+      return res.json({
+        error: false,
+        notes,
+        message: "Search results retrieved successfully"
+      });
+    } catch (error) {
+      return res.status(500).json({
+        error: true,
+        message: "Internal Server Error"
+      });
+    }
+  });
+  
+
 app.listen(8000, () => {
   console.log("Server is running on port 8000");
 });

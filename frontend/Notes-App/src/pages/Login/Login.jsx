@@ -1,18 +1,39 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Nav from '../../components/Navbar/Nav';
 import '../Login/Login.css';
+import axios from 'axios';
+import axiosInstance from '../../utils/axiosInstance';
 
 
 function Login() {
+  const Navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
    
     // Login API call
 
+    try {
+      const response = await axiosInstance.post("/login", {
+        email: email,
+        password: password,
+      });
+
+      if(response.data && response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+        Navigate("/");
+      }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message){
+        alert(error.response.data.message);
+      }
+      else{
+        alert("An Unexpected error occurred. Please try again !")
+      }
+    }
 
   };
 
